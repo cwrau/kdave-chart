@@ -1,0 +1,22 @@
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor" -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kdave.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- with .Values.serviceMonitor.additionalLabels }}{{ toYaml . | nindent 4 }}{{- end }}
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    project: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  endpoints:
+    - port: metrics
+  selector:
+    matchLabels:
+      {{- with .Values.podLabels }}{{ toYaml . | nindent 6 }}{{- end }}
+      app: {{ include "kdave.name" . }}
+      release: {{ .Release.Name }}
+{{- end }}
